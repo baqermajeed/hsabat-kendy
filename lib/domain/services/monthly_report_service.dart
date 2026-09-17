@@ -226,6 +226,8 @@ class MonthlyReportService {
           continue;
         }
         installmentRows.add(
+          // المتبقي = مجموع الأشهر - الشهر الحالي (بعد احتساب هذا القسط).
+          // مثال: شهر 1 من 6 => المتبقي 5.
           DoctorMonthlyPaymentRow(
             paymentId: plan.paymentId,
             invoiceId: plan.invoiceId,
@@ -239,6 +241,10 @@ class MonthlyReportService {
             treatmentDoctor: plan.treatmentDoctor,
             isRafidainInstallmentSource: true,
             installmentMonths: plan.months,
+            remainingInstallmentMonths: _remainingInstallmentMonths(
+              plan: plan,
+              installmentDate: installmentDateProvider(plan),
+            ),
             monthlyInstallmentAmount: plan.monthlyAmount,
           ),
         );
@@ -277,6 +283,10 @@ class MonthlyReportService {
             treatmentDoctor: plan.treatmentDoctor,
             isRafidainInstallmentSource: true,
             installmentMonths: plan.months,
+            remainingInstallmentMonths: _remainingInstallmentMonths(
+              plan: plan,
+              installmentDate: installmentDate,
+            ),
             monthlyInstallmentAmount: plan.monthlyAmount,
           ),
         );
@@ -308,5 +318,19 @@ class MonthlyReportService {
       treatmentDoctor: payment.treatmentDoctor,
       isRafidainInstallmentSource: false,
     );
+  }
+
+  int _remainingInstallmentMonths({
+    required RafidainInstallmentPlan plan,
+    required DateTime installmentDate,
+  }) {
+    final firstMonthIndex = plan.startDate.year * 12 + plan.startDate.month;
+    final currentMonthIndex = installmentDate.year * 12 + installmentDate.month;
+    final elapsedInstallments = (currentMonthIndex - firstMonthIndex) + 1;
+    final remaining = plan.months - elapsedInstallments;
+    if (remaining < 0) {
+      return 0;
+    }
+    return remaining;
   }
 }

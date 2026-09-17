@@ -21,9 +21,27 @@ class XanthusPaymentRow {
   final DateTime paymentDate;
   final String treatmentDoctor;
 
-  bool get isRafidainInstallment =>
-      type.trim().toLowerCase() == 'credit card' &&
-      bankName.trim() == 'كي كار اقساط الرافدين';
+  bool get isRafidainInstallment {
+    final normalizedType = _normalizeForMatch(type);
+    final normalizedBank = _normalizeForMatch(bankName);
+
+    final isCardPayment =
+        normalizedType == 'credit card' ||
+        normalizedType.contains('credit card') ||
+        normalizedType.contains('card') ||
+        normalizedType.contains('بطاق');
+
+    final hasRafidain = normalizedBank.contains('رافدين');
+    final hasInstallments =
+        normalizedBank.contains('اقساط') || normalizedBank.contains('قسط');
+    final hasQiCard =
+        normalizedBank.contains('كي كار') ||
+        normalizedBank.contains('كي كارد') ||
+        normalizedBank.contains('qi card') ||
+        normalizedBank.contains('qicard');
+
+    return hasRafidain && hasInstallments && (isCardPayment || hasQiCard);
+  }
 
   String get paymentMethodLabel {
     if (isRafidainInstallment) {
@@ -100,5 +118,34 @@ class XanthusPaymentRow {
       return null;
     }
     return DateTime.tryParse(value.toString());
+  }
+
+  static String _normalizeForMatch(String value) {
+    var normalized = value.trim().toLowerCase();
+    if (normalized.isEmpty) {
+      return '';
+    }
+
+    const replacements = <String, String>{
+      'أ': 'ا',
+      'إ': 'ا',
+      'آ': 'ا',
+      'ى': 'ي',
+      'ؤ': 'و',
+      'ئ': 'ي',
+      'ة': 'ه',
+      'ـ': '',
+    };
+
+    replacements.forEach((from, to) {
+      normalized = normalized.replaceAll(from, to);
+    });
+
+    normalized = normalized
+        .replaceAll(RegExp(r'[_\-/\\.,;:()]+'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
+    return normalized;
   }
 }

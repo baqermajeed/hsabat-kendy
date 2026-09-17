@@ -614,6 +614,7 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                       DataColumn(label: _SortHeader(text: 'تاريخ الدفع')),
                       DataColumn(label: _SortHeader(text: 'طريقة الدفع')),
                       DataColumn(label: _SortHeader(text: 'الشهر')),
+                      DataColumn(label: _SortHeader(text: 'الأشهر المتبقية')),
                       DataColumn(label: _SortHeader(text: 'القسط الشهري')),
                       DataColumn(label: SizedBox(width: 18)),
                     ],
@@ -670,6 +671,27 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                             ),
                           ),
                           DataCell(Text(row.paymentDate.month.toString())),
+                          DataCell(
+                            row.remainingInstallmentMonths == null
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.emeraldSoft,
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Text(
+                                      '-',
+                                      style: GoogleFonts.cairo(
+                                        color: AppColors.emerald,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  )
+                                : Text(row.remainingInstallmentMonths.toString()),
+                          ),
                           DataCell(
                             row.monthlyInstallmentAmount == null
                                 ? Container(

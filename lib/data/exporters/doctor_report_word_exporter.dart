@@ -549,11 +549,12 @@ class DoctorReportWordExporter {
       'طريقة الدفع',
       'الشهر',
       'عدد أشهر التقسيط',
+      'الأشهر المتبقية',
       'القسط الشهري',
     ];
 
     // Widths tuned for A4, full-page with zero margins.
-    const widths = <int>[500, 2050, 1500, 1350, 1150, 1900, 700, 1100, 1100];
+    const widths = <int>[500, 1900, 1400, 1250, 1050, 1800, 600, 1000, 950, 1000];
 
     const blackBorder = DocxBorderSide(
       style: DocxBorder.single,
@@ -653,8 +654,13 @@ class DoctorReportWordExporter {
               fill: i.isOdd ? _zebraFill : null,
             ),
             dataCell(
-              dashOr(rows[i].monthlyInstallmentAmount),
+              dashOr(rows[i].remainingInstallmentMonths),
               widths[8],
+              fill: i.isOdd ? _zebraFill : null,
+            ),
+            dataCell(
+              dashOr(rows[i].monthlyInstallmentAmount),
+              widths[9],
               fill: i.isOdd ? _zebraFill : null,
             ),
           ],

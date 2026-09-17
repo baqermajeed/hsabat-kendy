@@ -10,6 +10,7 @@ class DoctorMonthlyPaymentRow {
     required this.treatmentDoctor,
     required this.isRafidainInstallmentSource,
     this.installmentMonths,
+    this.remainingInstallmentMonths,
     this.monthlyInstallmentAmount,
   });
 
@@ -23,5 +24,6 @@ class DoctorMonthlyPaymentRow {
   final String treatmentDoctor;
   final bool isRafidainInstallmentSource;
   final int? installmentMonths;
+  final int? remainingInstallmentMonths;
   final double? monthlyInstallmentAmount;
 }
