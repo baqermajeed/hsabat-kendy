@@ -5,8 +5,8 @@ class PlansApiConfig {
   });
 
   static const managed = PlansApiConfig(
-    baseUrl: 'https://hsabat-kendy.example.com',
-    apiKey: 'CHANGE_ME_BRANCH2_API_KEY',
+    baseUrl: 'https://kendyhsabat.farahdent.com',
+    apiKey: '5dbc599c5df27bf55b60fee31240a48424f109e0789571a8e14e4068c17dbbe2',
   );
 
   final String baseUrl;
