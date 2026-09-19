@@ -670,6 +670,44 @@ class MainDashboardController extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteInstallmentPlan(String paymentId) async {
+    final id = paymentId.trim();
+    if (id.isEmpty) {
+      statusMessage = 'تعذر إلغاء الخطة: معرّف غير صالح.';
+      notifyListeners();
+      return;
+    }
+
+    _setBusy('جاري إلغاء خطة الأقساط...');
+    try {
+      final deleted = await _reportService.deleteInstallmentPlan(id);
+      if (!deleted) {
+        statusMessage = 'لم يتم العثور على خطة أقساط لإلغائها.';
+        return;
+      }
+      if (_client.isConnected) {
+        await generateMonthlyReport();
+        if (statusMessage.startsWith('فشل') || statusMessage.startsWith('تعذر')) {
+          return;
+        }
+      } else {
+        reportRows = reportRows
+            .where(
+              (row) =>
+                  !(row.isRafidainInstallmentSource && row.paymentId == id),
+            )
+            .toList(growable: false);
+        monthlyTotal =
+            reportRows.fold<double>(0, (sum, row) => sum + row.amount);
+      }
+      statusMessage = 'تم إلغاء خطة الأقساط بنجاح.';
+    } catch (error) {
+      statusMessage = 'تعذر إلغاء خطة الأقساط: $error';
+    } finally {
+      _setIdle();
+    }
+  }
+
   Future<void> saveLocalOnlyInstallmentPlan() async {
     final doctor = selectedDoctor?.trim() ?? '';
     if (doctor.isEmpty) {

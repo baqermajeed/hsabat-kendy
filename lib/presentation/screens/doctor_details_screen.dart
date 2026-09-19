@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
 
 import '../../core/theme/app_colors.dart';
+import '../../domain/entities/doctor_monthly_payment_row.dart';
 import '../../domain/entities/rafidain_installment_plan.dart';
 import '../controllers/main_dashboard_controller.dart';
 import '../widgets/premium_ui.dart';
@@ -130,6 +131,57 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
       final safeOffset = previousOffset.clamp(0.0, max);
       _pageScrollController.jumpTo(safeOffset);
     });
+  }
+
+  Future<void> _confirmAndCancelInstallmentPlan(
+    DoctorMonthlyPaymentRow row,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            'إلغاء خطة الأقساط',
+            style: GoogleFonts.cairo(fontWeight: FontWeight.w800),
+          ),
+          content: Text(
+            'هل تريد إلغاء خطة الأقساط للمريض "${row.patientName}"؟\n'
+            'سيتم حذف الخطة بالكامل من التطبيق.',
+            style: GoogleFonts.cairo(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('تراجع', style: GoogleFonts.cairo()),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('إلغاء الخطة', style: GoogleFonts.cairo()),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    await widget.controller.deleteInstallmentPlan(row.paymentId);
+    if (!mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          widget.controller.statusMessage,
+          style: GoogleFonts.cairo(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -715,9 +767,50 @@ class _DoctorDetailsScreenState extends State<DoctorDetailsScreen> {
                                     '${amountFormat.format(row.monthlyInstallmentAmount)} د.ع',
                                   ),
                           ),
-                          const DataCell(
-                            Icon(Icons.more_vert_rounded,
-                                size: 18, color: AppColors.textMuted),
+                          DataCell(
+                            row.isRafidainInstallmentSource
+                                ? PopupMenuButton<String>(
+                                    tooltip: 'إجراءات الخطة',
+                                    icon: const Icon(
+                                      Icons.more_vert_rounded,
+                                      size: 18,
+                                      color: AppColors.textMuted,
+                                    ),
+                                    onSelected: (value) async {
+                                      if (value == 'cancel_plan') {
+                                        await _confirmAndCancelInstallmentPlan(
+                                          row,
+                                        );
+                                      }
+                                    },
+                                    itemBuilder: (context) => [
+                                      PopupMenuItem<String>(
+                                        value: 'cancel_plan',
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Icons.cancel_outlined,
+                                              size: 18,
+                                              color: Color(0xFFDC2626),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              'إلغاء خطة الأقساط',
+                                              style: GoogleFonts.cairo(
+                                                color: const Color(0xFFDC2626),
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const Icon(
+                                    Icons.more_vert_rounded,
+                                    size: 18,
+                                    color: AppColors.textMuted,
+                                  ),
                           ),
                         ],
                       );

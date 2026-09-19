@@ -77,6 +77,29 @@ class InstallmentPlansApiClient {
     return plan;
   }
 
+  Future<void> deletePlan(PlansApiConfig config, String paymentId) async {
+    _ensureConfigured(config);
+    final id = paymentId.trim();
+    if (id.isEmpty) {
+      throw Exception('معرّف الخطة غير صالح');
+    }
+
+    final response = await _http
+        .delete(
+          config.resolve('/api/plans/${Uri.encodeComponent(id)}'),
+          headers: _headers(config),
+        )
+        .timeout(const Duration(seconds: 20));
+
+    if (response.statusCode == 404) {
+      return;
+    }
+    final body = _decodeMap(response);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(_errorMessage(body, fallback: 'فشل حذف الخطة من السيرفر'));
+    }
+  }
+
   /// يرفع لقطة كاملة للخطط كباك أب على السيرفر.
   Future<int> uploadBackup(
     PlansApiConfig config,

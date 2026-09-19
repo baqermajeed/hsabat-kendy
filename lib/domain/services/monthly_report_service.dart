@@ -98,6 +98,10 @@ class MonthlyReportService {
     await _installmentPlanRepository.savePlan(plan);
   }
 
+  Future<bool> deleteInstallmentPlan(String paymentId) async {
+    return _installmentPlanRepository.deletePlan(paymentId);
+  }
+
   Future<MonthlyReportResult> buildMonthlyReport({
     required int year,
     required int month,

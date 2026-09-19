@@ -57,6 +57,32 @@ class InstallmentPlanRepository {
     }
   }
 
+  Future<bool> deletePlan(String paymentId) async {
+    final id = paymentId.trim();
+    if (id.isEmpty) {
+      return false;
+    }
+
+    final current = await _localStore.loadPlans();
+    final remaining =
+        current.where((item) => item.paymentId != id).toList(growable: false);
+    if (remaining.length == current.length) {
+      return false;
+    }
+    await _localStore.savePlans(remaining);
+
+    final config = await _settingsRepository.load();
+    if (!config.isConfigured) {
+      return true;
+    }
+    try {
+      await _apiClient.deletePlan(config, id);
+    } catch (_) {
+      // يُعوَّض بالمهمة اليومية / الرفع اليدوي.
+    }
+    return true;
+  }
+
   Future<int> backupToServer({PlansApiConfig? config}) async {
     final resolved = config ?? await _settingsRepository.load();
     if (!resolved.isConfigured) {
